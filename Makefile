@@ -3,7 +3,7 @@
 
 include $(TOPDIR)/rules.mk
 
-LUCI_TITLE:=LuCI example app for js based luci
+LUCI_TITLE:=LuCI pool app for js based luci
 LUCI_DEPENDS:=+luci-base
 LUCI_PKGARCH:=all
 

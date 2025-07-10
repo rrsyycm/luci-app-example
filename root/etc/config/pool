@@ -1,0 +1,4 @@
+
+config settings
+    option enable_feature '0'
+    option target_host

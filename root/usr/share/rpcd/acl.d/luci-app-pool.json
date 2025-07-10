@@ -1,0 +1,22 @@
+{
+  "luci-app-pool": {
+    "description": "Grant UCI and RPC access to LuCI app pool",
+    "read": {
+      "ubus": {
+        "luci.pool": [
+          "get_sample1",
+          "get_sample2",
+          "ping_host"
+        ]
+      },
+      "uci": [
+        "pool"
+      ]
+    },
+    "write": {
+      "uci": [
+        "pool"
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+touch /etc/config/pool
+uci set pool.setting.enable_feature=second
+uci set pool.setting.target_host='8.8.8.8'
+uci commit pool
+
+return 0
