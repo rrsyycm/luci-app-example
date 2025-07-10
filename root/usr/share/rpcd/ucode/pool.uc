@@ -8,11 +8,24 @@ import { cursor } from 'uci';
 const uci = cursor();
 
 const methods = {
+    get_status: {
+		call: function() {
+			const result = {
+				running: false
+			};
+
+			const pid = exec('pgrep xray', true);
+			if (pid && pid.trim().length > 0)
+				result.running = true;
+
+			return result;
+		}
+	},
 	get_sample1: {
 		call: function() {
-			const num_cats = uci.get('example', 'animals', 'num_cats');
-			const num_dogs = uci.get('example', 'animals', 'num_dogs');
-			const num_parakeets = uci.get('example', 'animals', 'num_parakeets');
+			const num_cats = uci.get('pool', 'animals', 'num_cats');
+			const num_dogs = uci.get('pool', 'animals', 'num_dogs');
+			const num_parakeets = uci.get('pool', 'animals', 'num_parakeets');
 			const result = {
 				num_cats,
 				num_dogs,
@@ -52,4 +65,4 @@ const methods = {
     }
 };
 
-return { 'luci.example': methods };
+return { 'luci.pool': methods };

@@ -6,7 +6,8 @@
         "luci.pool": [
           "get_sample1",
           "get_sample2",
-          "ping_host"
+          "ping_host",
+          "get_status"
         ]
       },
       "uci": [
