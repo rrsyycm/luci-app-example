@@ -11,12 +11,8 @@ const methods = {
     get_status: {
 		call: function() {
 			const result = {
-				running: false
+				running: true,
 			};
-
-			const pid = exec('pgrep xray', true);
-			if (pid && pid.trim().length > 0)
-				result.running = true;
 
 			return result;
 		}
@@ -57,10 +53,15 @@ const methods = {
 		}
 	},
 
-	ping_host: {
-        params: ['target'],
-        call: function (target) {
-            return target;
+	get_host: {
+        call: function() {
+            return {name: 'windows'};
+        }
+    },
+    restart_service: {
+        call: function() {
+            let code = os.exec('killall sing-box');
+            return { code: code };
         }
     }
 };

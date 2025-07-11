@@ -1,0 +1,133 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": false
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": false,
+      "store_fakeip": false,
+      "store_rdrc": false
+    }
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "address": [
+        "172.18.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "strict_route": true
+    },
+    {
+      "type": "mixed",
+      "listen": "::",
+      "listen_port": 7890
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "直连",
+      "type": "direct"
+    },
+    {
+      "tag": "代理节点",
+      "type": "vless",
+      "server": "1688pool.com",
+      "server_port": 25555,
+      "uuid": "pool",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.yahoo.com",
+        "insecure": false,
+        "reality": {
+          "enabled": true,
+          "public_key": "1Y0tA6VQ9aZrfXmbb5PXR5RxwvINb0kK4Y7bG5q7WV4",
+          "short_id": "6019"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    }
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "rules": [
+      {
+        "domain": [
+          "google.com",
+          "www.google.com",
+          "googleapis.com"
+        ],
+        "outbound": "代理节点"
+      },
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "直连"
+      },
+      {
+        "clash_mode": "Direct",
+        "outbound": "直连"
+      },
+      {
+        "clash_mode": "Global",
+        "outbound": "代理节点"
+      }
+    ]
+  },
+  "dns": {
+    "independent_cache": true,
+    "servers": [
+      {
+        "tag": "google",
+        "address": "https://8.8.8.8/dns-query",
+        "detour": "直连"
+      },
+      {
+        "tag": "ali",
+        "address": "https://223.5.5.5/dns-query",
+        "detour": "直连"
+      },
+      {
+        "tag": "fakeip",
+        "address": "fakeip"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "ali"
+      },
+      {
+        "clash_mode": "Direct",
+        "server": "ali"
+      },
+      {
+        "clash_mode": "Global",
+        "server": "google"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
+        "server": "fakeip"
+      }
+    ],
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": "fc00::/18"
+    }
+  }
+}

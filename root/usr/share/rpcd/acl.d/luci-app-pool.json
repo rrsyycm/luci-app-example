@@ -6,8 +6,12 @@
         "luci.pool": [
           "get_sample1",
           "get_sample2",
-          "ping_host",
-          "get_status"
+          "get_host",
+          "get_status",
+          "restart_service"
+        ],
+        "luci": [
+          "sys.exec"
         ]
       },
       "uci": [
@@ -17,7 +21,15 @@
     "write": {
       "uci": [
         "pool"
-      ]
+      ],
+      "ubus": {
+        "luci": [
+          "sys.exec"
+        ],
+        "luci.pool": [
+          "restart_service"
+        ]
+      }
     }
   }
 }
