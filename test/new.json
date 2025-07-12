@@ -1,38 +1,67 @@
 {
-  "log": {
-    "level": "info",
-    "timestamp": false
-  },
-  "experimental": {
-    "cache_file": {
-      "enabled": false,
-      "store_fakeip": false,
-      "store_rdrc": false
-    }
-  },
   "inbounds": [
     {
       "type": "tun",
-      "address": [
-        "172.18.0.1/30",
-        "fdfe:dcba:9876::1/126"
-      ],
+      "tag": "tun-in",
+      "interface_name": "singbox",
+      "mtu": 9000,
       "auto_route": true,
-      "strict_route": true
-    },
-    {
-      "type": "mixed",
-      "listen": "::",
-      "listen_port": 7890
+      "strict_route": true,
+      "stack": "system",
+      "endpoint_independent_nat": false,
+      "inet4_address": "172.19.0.1/30",
+      "inet6_address": "fdfe:dcba:9876::1/126"
     }
   ],
   "outbounds": [
     {
-      "tag": "直连",
-      "type": "direct"
+      "type": "selector",
+      "tag": "🚀 节点选择",
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "🎈 自动选择",
+        "1688pool仅用于挖矿禁止上外网-主力-pool"
+      ]
     },
     {
-      "tag": "代理节点",
+      "type": "urltest",
+      "tag": "🎈 自动选择",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "3m",
+      "tolerance": 150,
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "1688pool仅用于挖矿禁止上外网-主力-pool"
+      ]
+    },
+    {
+      "type": "direct",
+      "tag": "🎯 全球直连"
+    },
+    {
+      "type": "selector",
+      "tag": "🐟 漏网之鱼",
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "🚀 节点选择",
+        "🎯 全球直连",
+        "1688pool仅用于挖矿禁止上外网-主力-pool"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "GLOBAL",
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "🚀 节点选择",
+        "🎈 自动选择",
+        "🎯 全球直连",
+        "🐟 漏网之鱼",
+        "1688pool仅用于挖矿禁止上外网-主力-pool"
+      ]
+    },
+    {
+      "tag": "1688pool仅用于挖矿禁止上外网-主力-pool",
       "type": "vless",
       "server": "1688pool.com",
       "server_port": 25555,
@@ -54,80 +83,141 @@
     }
   ],
   "route": {
-    "auto_detect_interface": true,
     "rules": [
       {
-        "domain": [
-          "google.com",
-          "www.google.com",
-          "googleapis.com"
+        "action": "sniff",
+        "inbound": "tun"
+      },
+      {
+        "action": "hijack-dns",
+        "protocol": "dns"
+      },
+      {
+        "action": "route",
+        "clash_mode": "direct",
+        "outbound": "🎯 全球直连"
+      },
+      {
+        "action": "route",
+        "clash_mode": "global",
+        "outbound": "GLOBAL"
+      },
+      {
+        "action": "reject",
+        "protocol": "quic"
+      },
+      {
+        "action": "reject",
+        "rule_set": [
+          "Category-Ads"
+        ]
+      },
+      {
+        "action": "route",
+        "rule_set": [
+          "GeoSite-Private"
         ],
-        "outbound": "代理节点"
+        "outbound": "🎯 全球直连"
       },
       {
-        "action": "sniff"
+        "action": "route",
+        "rule_set": [
+          "GeoSite-CN"
+        ],
+        "outbound": "🎯 全球直连"
       },
       {
-        "protocol": "dns",
-        "action": "hijack-dns"
+        "action": "route",
+        "rule_set": [
+          "GeoIP-Private"
+        ],
+        "outbound": "🎯 全球直连"
       },
       {
-        "ip_is_private": true,
-        "outbound": "直连"
+        "action": "route",
+        "rule_set": [
+          "GeoIP-CN"
+        ],
+        "outbound": "🎯 全球直连"
       },
       {
-        "clash_mode": "Direct",
-        "outbound": "直连"
-      },
-      {
-        "clash_mode": "Global",
-        "outbound": "代理节点"
+        "action": "route",
+        "rule_set": [
+          "GeoLocation-!CN"
+        ],
+        "outbound": "🚀 节点选择"
       }
-    ]
+    ],
+    "rule_set": [
+      {
+        "tag": "Category-Ads",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      },
+      {
+        "tag": "GeoIP-Private",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/private.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      },
+      {
+        "tag": "GeoSite-Private",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/private.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      },
+      {
+        "tag": "GeoIP-CN",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      },
+      {
+        "tag": "GeoSite-CN",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      },
+      {
+        "tag": "GeoLocation-!CN",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
+        "format": "binary",
+        "download_detour": "🎯 全球直连"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "GLOBAL"
   },
   "dns": {
-    "independent_cache": true,
     "servers": [
       {
-        "tag": "google",
-        "address": "https://8.8.8.8/dns-query",
-        "detour": "直连"
+        "tag": "remote-dns",
+        "address": "tls://8.8.8.8:853",
+        "detour": "🚀 节点选择"
       },
       {
-        "tag": "ali",
+        "tag": "local-dns",
         "address": "https://223.5.5.5/dns-query",
-        "detour": "直连"
-      },
-      {
-        "tag": "fakeip",
-        "address": "fakeip"
+        "detour": "🎯 全球直连"
       }
     ],
     "rules": [
       {
-        "outbound": "any",
-        "server": "ali"
+        "server": "local-dns",
+        "geoip": "cn"
       },
       {
-        "clash_mode": "Direct",
-        "server": "ali"
-      },
-      {
-        "clash_mode": "Global",
-        "server": "google"
-      },
-      {
-        "query_type": [
-          "A",
-          "AAAA"
-        ],
-        "server": "fakeip"
+        "server": "remote-dns",
+        "clash_mode": "global"
       }
     ],
-    "fakeip": {
-      "enabled": true,
-      "inet4_range": "198.18.0.0/15",
-      "inet6_range": "fc00::/18"
-    }
+    "final": "remote-dns"
   }
 }

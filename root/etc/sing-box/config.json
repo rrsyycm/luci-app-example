@@ -19,10 +19,10 @@
       "access_control_allow_private_network": false
     },
     "cache_file": {
-      "enabled": true,
+      "enabled": false,
       "path": "cache.db",
       "cache_id": "",
-      "store_fakeip": true,
+      "store_fakeip": false,
       "store_rdrc": true,
       "rdrc_timeout": "7d"
     }
@@ -47,6 +47,8 @@
       "mtu": 9000,
       "auto_route": true,
       "strict_route": true,
+      "sniff": true,
+      "sniff_override_destination": true,
       "endpoint_independent_nat": false,
       "stack": "mixed"
     }

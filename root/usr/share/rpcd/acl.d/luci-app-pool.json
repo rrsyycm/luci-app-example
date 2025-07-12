@@ -8,7 +8,8 @@
           "get_sample2",
           "get_host",
           "get_status",
-          "restart_service"
+          "restart_service",
+          "ping_test"
         ],
         "luci": [
           "sys.exec"
@@ -23,12 +24,8 @@
         "pool"
       ],
       "ubus": {
-        "luci": [
-          "sys.exec"
-        ],
-        "luci.pool": [
-          "restart_service"
-        ]
+        "file": [ "exec", "write" ],
+        "service": [ "start", "stop", "restart", "status", "list" ]
       }
     }
   }

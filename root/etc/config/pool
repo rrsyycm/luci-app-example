@@ -1,4 +1,10 @@
 
 config setting 'setting'
-    option enable_feature '1'
-    option target_host '8.8.8.8'
+	option enable_feature '1'
+	option target_host '8.8.8.8'
+
+config third 'third'
+	list list_option 'btc.f2pool.com:1314'
+	list list_option 'btcssl.f2pool.com:1300'
+	list list_option 'ss.antpool.com:3333'
+	list list_option 'bs.poolbinance.com:3333'
