@@ -50,9 +50,10 @@ const methods = {
             return {name: 'windows'};
         }
     },
-    restart_service: {
-        call: function () {
-            let code = system('/etc/init.d/pool start');
+    pool_run: {
+        args: {run: 'run'},
+        call: function (request) {
+            let code = system(`/etc/init.d/pool ${request.args.run}`);
             return {code: code};
         }
     }

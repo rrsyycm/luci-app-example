@@ -4,11 +4,9 @@
     "read": {
       "ubus": {
         "luci.pool": [
-          "get_sample1",
-          "get_sample2",
           "get_host",
           "get_status",
-          "restart_service",
+          "pool_run",
           "ping_test"
         ],
         "luci": [
