@@ -63,6 +63,9 @@ return view.extend({
     margin: 4px;
     background-color: #f8f8f8;
     }
+    .el-result__extra{
+    margin-top:0.6rem !important;
+    }
   `);
             // 按顺序加载
 
@@ -86,7 +89,7 @@ return view.extend({
                 data() {
                     return {
                         loading: false,
-                        enableFeature: uci.get('pool', 'setting', 'enable_feature') === '1' ? 'open' : 'close',
+                        enable: uci.get('pool', 'setting', 'enable_feature') === '1' ? true : false,
                         status: null,
                         data: uci.get('pool', "third", 'list_option'),
                         tableData: uci.get('pool', "third", 'list_option').map(host => ({host, loading: false})),
@@ -103,17 +106,24 @@ return view.extend({
                     };
                 },
                 async created() {
-                    const status = await getStatus(); // 异步获取状态
-                    this.status = status?.code || 99
+                    this.checkStatus()
                 },
                 methods: {
-                    async segmented(index) {
-                        console.log('segmented',index)
-                        uci.set('pool', 'setting', 'enable_feature', index === 'open' ? '1' : '0')
+                    async checkStatus(){
+                        this.status = null
+                        const status = await getStatus(); // 异步获取状态
+                        this.status = status?.code || 99
+                    },
+                    async runSwitch(index) {
+                        console.log('runSwitch',index)
+                        uci.set('pool', 'setting', 'enable_feature', index  ? '1' : '0')
                         uci.save('pool');
-                        poolRun(index === 'open' ? 'start':'stop').then(res=>{
+                        poolRun(index ? 'start':'stop').then(async res => {
                             this.apply()
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            this.checkStatus()
                         })
+
                     },
                     async test() {
                         this.tableData.forEach()
@@ -146,6 +156,17 @@ return view.extend({
                             });
                         })
                     },
+                    getStatusConfig(code){
+                        console.log('code',code)
+                        switch (code) {
+                            case 7:
+                                return {title:'连接失败',subTitle:code,icon:'error'}
+                            case 97:
+                                return {title:'DNS 解析失败',subTitle:code,icon:'warning'}
+                            default:
+                                return {title:'服务已启动',subTitle:code,icon:'success'}
+                        }
+                    },
                     getDelayColo(delay){
                         switch (true) {
                             case delay === '超时':
@@ -172,15 +193,27 @@ return view.extend({
                                         <template #header> <span>运行状态</span>
                         
                                         </template>
-                                        <el-result icon="success" title="Success Tip" :sub-title="status == null ? '检查中' : status">
+                                        <el-result :icon="getStatusConfig(status)?.icon" :title="getStatusConfig(status)?.title" >
                                             <template #extra>
-                                                <el-segmented @change="segmented" v-model="enableFeature" :options="options">
-                                                    <template #default="scope">
-                                                        <div class="flex flex-col items-center gap-2 p-2">
-                                                            <div>{{ scope.item.label }}</div>
-                                                        </div>
-                                                    </template>
-                                                </el-segmented>
+                                                <el-switch
+                                                    v-model="enable"
+                                                    class="ml-2"
+                                                    active-text="开启"
+                                                    inactive-text="关闭"
+                                                    @change="runSwitch"
+                                                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
+                                                />
+                                                
+                                            </template>
+                                            <template #sub-title>
+                                                <el-button
+                                                    link
+                                                    :loading="status === null"
+                                                    @click="checkStatus"
+                                                    >
+                                                    <svg v-if="getStatusConfig(status)?.subTitle" t="1752422449210" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1514" width="16" height="16"><path d="M1016.057791 124.92321l-22.64677 221.938351a28.081995 28.081995 0 0 1-30.799608 25.364383l-221.938351-22.646771a28.081995 28.081995 0 0 1-14.946869-49.822895l76.546085-62.505086a394.053807 394.053807 0 1 0-45.293541 588.816034 58.881603 58.881603 0 1 1 70.657924 94.210565 511.817014 511.817014 0 1 1 65.675634-757.760942l76.99902-62.505087a28.081995 28.081995 0 0 1 45.746476 24.911448z" fill="#3E2AD1" p-id="1515"></path></svg>
+                                                    {{ getStatusConfig(status)?.subTitle }}
+                                                </el-button>
                                             </template>
                                         </el-result>
                                     </el-card>
