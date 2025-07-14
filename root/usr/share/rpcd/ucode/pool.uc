@@ -11,37 +11,48 @@ const methods = {
     ping_test: {
         args: {domain: 'domain', port: 'port'},
         call: function (request) {
-            let domain = request.args.domain;
-            let port = request.args.port || '80';
-            let output_file = '/tmp/tcping_result.txt';
-            let cmd = `tcping -c 1 -q -p ${port} ${domain} > ${output_file} 2>&1`;
-            let code = system(cmd);
+            let domain = request.args.domain || 'ltc.ss.poolin.one'; // ltc.ss.poolin.one ss.antpool.com
+            let port = request.args.port || '443';
+            let output_file = `/tmp/${domain}_ping_output.txt`;
+            let time_file = `/tmp/${domain}_time.txt`;
+            let ret_file = `/tmp/${domain}_ret.txt`;
+            let message = `'{"id":1,"method":"mining.subscribe","params":[]}'`;
 
-            let output = '';
+            let cmd = `START=$(date +%s%3N); echo ${message} | timeout 1 nc ${domain} ${port} > ${output_file}; RET=$?; END=$(date +%s%3N); echo $((END - START)) > ${time_file}; echo $RET > ${ret_file}`;
+            // let cmd = `START=$(date +%s%3N); echo ${message} | timeout 3 nc ${domain} ${port} > ${output_file}; END=$(date +%s%3N); echo $((END - START)) > ${time_file}`;
+
+            system(cmd);
+
+            // 读取延迟时间
+            let latency = 3000;
+            let code = '1';
             try {
-                let f = fs.open(output_file, 'r');
-                output = f.read('all');
+                let f = fs.open(ret_file, 'r');
+                code = trim(f.read('all'));
                 f.close();
             } catch (e) {
-                return {
-                    error: 'Failed to read output file',
-                    message: '' + e
-                };
             }
 
-            let latency = null;
-            let re = regexp('time=([0-9.]+) ms', '');
-            let m = match(output, re);
-            if (m)
-                latency = m[1];
+            if (code !== '0') {
+                return {delay: 3000, code: code};
+            }
 
-            return { time: latency || '超时' };
+            try {
+                let f = fs.open(time_file, 'r');
+                latency = trim(f.read('all'));
+                f.close();
+            } catch (e) {
+                // ignore read error
+            }
+
+            // 可选：也可以读取 output_file 的响应内容进行进一步判断
+            return {delay: latency, code: code};
         }
     },
     get_status: {
         call: function () {
             const code = system('set -o pipefail; curl -sSx socks5://127.0.0.1:20122 -I https://www.google.com | head -n 1');
-            return {code:code};
+            return {code: code};
         }
     },
 

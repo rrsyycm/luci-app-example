@@ -9,6 +9,7 @@
             <mapping deploy="/usr" local="$PROJECT_DIR$/root/usr/" web="/" />
             <mapping deploy="/www/luci-static" local="$PROJECT_DIR$/htdocs/luci-static" web="/" />
             <mapping deploy="/etc" local="$PROJECT_DIR$/root/etc" web="/" />
+            <mapping deploy="/root" local="$PROJECT_DIR$/c" web="/" />
           </mappings>
         </serverdata>
       </paths>

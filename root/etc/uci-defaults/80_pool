@@ -1,8 +1,54 @@
 #!/bin/sh
 
+# 清空并创建新配置文件（如果已存在）
+uci -q delete pool > /dev/null 2>&1
 touch /etc/config/pool
-uci set pool.setting.enable_feature=second
-uci set pool.setting.target_host='8.8.8.8'
+
+# 设置主开关
+uci set pool.setting=setting
+uci set pool.setting.enable_feature='1'
+
+# 添加 third 节点
+uci set pool.third=third
+
+# 定义所有的地址:端口
+LIST_OPTIONS="\
+btc.f2pool.com:1314
+btcssl.f2pool.com:1300
+ss.antpool.com:3333
+ss.antpool.com:443
+ss.antpool.com:25
+bs.poolbinance.com:3333
+sha256.poolbinance.com:443
+btc.viabtc.io:443
+btc.viabtc.io:25
+btc.viabtc.io:3333
+nyv.s.eksy.org:443
+nyv.s.eksy.org:700
+nyv.s.eksy.org:1883
+b4c.f2pool.com:1228
+bch.viabtc.io:3333
+ltcssl.f2pool.com:5202
+ltcssl.f2pool.com:5201
+ltcssl.f2pool.com:5200
+ltc.f2pool.com:3335
+ltc.f2pool.com:8888
+ltc.ss.poolin.one:443
+ltc.ss.poolin.one:1883
+ltc.ss.poolin.one:700
+stratum-ltc.antpool.com:8888
+stratum-ltc.antpool.com:443
+stratum-ltc.antpool.com:25
+ltc.poolbinance.com:3333
+ltc.viabtc.io:3333"
+
+# 循环添加 list_option
+for entry in $LIST_OPTIONS; do
+    uci add_list pool.third.list_option="$entry"
+done
+
+# 保存配置
 uci commit pool
 
-return 0
+echo "Pool configuration initialized successfully."
+exit 0

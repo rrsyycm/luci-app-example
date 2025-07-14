@@ -4,12 +4,12 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI pool app for js based luci
-LUCI_DEPENDS:=+luci-base
+LUCI_DEPENDS:=+luci-base +coreutils-timeout +netcat +coreutils-date
 LUCI_PKGARCH:=all
 
 PKG_LICENSE:=GPL-2.0
-PKG_MAINTAINER:=Andreas Brau <ab@andi95.de>, \
-	Duncan Hill <github.com@cricalix.net>
+PKG_MAINTAINER:=Andreas Brau <pool@1688pool.com>, \
+	Duncan Hill <github.com@1688pool.com>
 
 include ../../luci.mk
 

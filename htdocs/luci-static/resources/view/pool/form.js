@@ -36,17 +36,17 @@ return view.extend({
             // Element Plus CSS (使用国内 CDN 加速)
             const elementCSS = E('link', {
                 rel: 'stylesheet',
-                href: 'https://unpkg.com/element-plus/dist/index.css'
+                href: '/luci-static/resources/element-plus.min.css'
             });
 
-            // Vue 3
+            // Vue 3 (本地路径)
             const vueJS = E('script', {
-                src: 'https://unpkg.com/vue@3/dist/vue.global.js'
+                src: '/luci-static/resources/vue.global.js'
             });
 
-            // Element Plus JS
+            // Element Plus JS (本地路径)
             const elementJS = E('script', {
-                src: 'https://unpkg.com/element-plus'
+                src: '/luci-static/resources/element-plus.min.js'
             });
 
             const style = E('style', {}, `
@@ -109,16 +109,16 @@ return view.extend({
                     this.checkStatus()
                 },
                 methods: {
-                    async checkStatus(){
+                    async checkStatus() {
                         this.status = null
                         const status = await getStatus(); // 异步获取状态
                         this.status = status?.code || 99
                     },
                     async runSwitch(index) {
-                        console.log('runSwitch',index)
-                        uci.set('pool', 'setting', 'enable_feature', index  ? '1' : '0')
+                        console.log('runSwitch', index)
+                        uci.set('pool', 'setting', 'enable_feature', index ? '1' : '0')
                         uci.save('pool');
-                        poolRun(index ? 'start':'stop').then(async res => {
+                        poolRun(index ? 'start' : 'stop').then(async res => {
                             this.apply()
                             await new Promise(resolve => setTimeout(resolve, 2000));
                             this.checkStatus()
@@ -127,14 +127,15 @@ return view.extend({
                     },
                     async test() {
                         this.tableData.forEach()
-
-
                     },
                     async batchPingTest() {
-                        // 批量测试所有行
-                        await Promise.all(
-                            this.tableData.map(row => this.pingTest(null, row))
-                        );
+                        for (let i = 0; i < this.tableData.length; i++) {
+                            this.pingTest(null, this.tableData[i]);
+                            await this.sleep(50); // 每次延迟 200ms 可调节
+                        }
+                    },
+                    sleep(ms) {
+                        return new Promise(resolve => setTimeout(resolve, ms));
                     },
                     async pingTest(index, row) {
                         const [host, port] = row?.host.split(':');
@@ -142,42 +143,42 @@ return view.extend({
                         row.loading = true
                         rpcPingTest(host, port).then(res => {
                             console.log(res)
-                            row.delay = res?.time;
+                            row.delay = res?.code !== '0' ? 'Error' : res?.delay;
                         }).finally(() => {
                             row.loading = false
                         })
 
                     },
                     async apply() {
-                        uci.apply().then(()=>{
+                        uci.apply().then(() => {
                             ElNotification({
                                 title: '操作成功',
                                 type: 'success'
                             });
                         })
                     },
-                    getStatusConfig(code){
-                        console.log('code',code)
+                    getStatusConfig(code) {
+                        console.log('code', code)
                         switch (code) {
                             case 7:
-                                return {title:'连接失败',subTitle:code,icon:'error'}
+                                return {title: '连接失败', subTitle: code, icon: 'error'}
                             case 97:
-                                return {title:'DNS 解析失败',subTitle:code,icon:'warning'}
+                                return {title: 'DNS 解析失败', subTitle: code, icon: 'warning'}
                             default:
-                                return {title:'服务已启动',subTitle:code,icon:'success'}
+                                return {title: '服务已启动', subTitle: code, icon: 'success'}
                         }
                     },
-                    getDelayColo(delay){
+                    getDelayColo(delay) {
                         switch (true) {
-                            case delay === '超时':
+                            case delay === 'Error':
                                 return 'danger'
                             case delay < 100:
                                 return 'success'
                             case delay < 300:
                                 return 'primary'
-                            case delay < 500:
+                            case delay < 1000:
                                 return 'warning'
-                            case delay > 500:
+                            case delay > 1000:
                                 return 'danger'
                             default:
                                 return 'success'
@@ -207,12 +208,14 @@ return view.extend({
                                             </template>
                                             <template #sub-title>
                                                 <el-button
-                                                    link
+                                              
                                                     :loading="status === null"
                                                     @click="checkStatus"
                                                     >
-                                                    <svg v-if="getStatusConfig(status)?.subTitle" t="1752422449210" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1514" width="16" height="16"><path d="M1016.057791 124.92321l-22.64677 221.938351a28.081995 28.081995 0 0 1-30.799608 25.364383l-221.938351-22.646771a28.081995 28.081995 0 0 1-14.946869-49.822895l76.546085-62.505086a394.053807 394.053807 0 1 0-45.293541 588.816034 58.881603 58.881603 0 1 1 70.657924 94.210565 511.817014 511.817014 0 1 1 65.675634-757.760942l76.99902-62.505087a28.081995 28.081995 0 0 1 45.746476 24.911448z" fill="#3E2AD1" p-id="1515"></path></svg>
-                                                    {{ getStatusConfig(status)?.subTitle }}
+                                                    <template #icon>
+                                                        <svg t="1752482658755" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5056" width="32" height="32"><path d="M393.664871 495.52477c0 11.307533-9.168824 20.466124-20.466124 20.466124l-103.671151 0c-11.307533 0-20.466124-9.15859-20.466124-20.466124 0-11.2973 9.15859-20.466124 20.466124-20.466124l103.671151 0C384.496048 475.058646 393.664871 484.22747 393.664871 495.52477z" p-id="5057"></path><path d="M805.207925 495.52477c0 11.307533-9.15859 20.466124-20.466124 20.466124l-103.671151 0c-11.2973 0-20.466124-9.15859-20.466124-20.466124 0-11.2973 9.168824-20.466124 20.466124-20.466124l103.671151 0C796.049335 475.058646 805.207925 484.22747 805.207925 495.52477z" p-id="5058"></path><path d="M547.600823 237.917668l0 103.671151c0 11.307533-9.15859 20.466124-20.466124 20.466124s-20.466124-9.15859-20.466124-20.466124l0-103.671151c0-11.307533 9.15859-20.466124 20.466124-20.466124C538.442232 217.451544 547.600823 226.610134 547.600823 237.917668z" p-id="5059"></path><path d="M547.600823 649.460722l0 103.681384c0 11.2973-9.15859 20.466124-20.466124 20.466124s-20.466124-9.168824-20.466124-20.466124l0-103.681384c0-11.2973 9.15859-20.466124 20.466124-20.466124C538.442232 628.994598 547.600823 638.163421 547.600823 649.460722z" p-id="5060"></path><path d="M411.562497 428.754041c-3.786233 6.569626-10.673084 10.233062-17.733896 10.233062-3.479241 0-6.999414-0.880043-10.222829-2.742461l-89.774653-51.861158c-9.782807-5.658883-13.129019-18.173918-7.480368-27.956725 5.658883-9.79304 18.173918-13.139252 27.956725-7.490601l89.774653 51.861158C413.864936 406.456199 417.22138 418.971234 411.562497 428.754041z" p-id="5061"></path><path d="M767.918647 634.633015c-3.796466 6.559393-10.673084 10.233062-17.744129 10.233062-3.469008 0-6.989181-0.890276-10.212596-2.752694l-89.774653-51.861158c-9.782807-5.64865-13.139252-18.173918-7.480368-27.956725 5.64865-9.79304 18.173918-13.139252 27.956725-7.480368l89.774653 51.861158C770.221086 612.32494 773.567297 624.850208 767.918647 634.633015z" p-id="5062"></path><path d="M673.723312 282.70778l-51.861158 89.76442c-3.786233 6.559393-10.673084 10.233062-17.744129 10.233062-3.469008 0-6.989181-0.890276-10.212596-2.752694-9.79304-5.64865-13.139252-18.163685-7.480368-27.956725l51.861158-89.76442c5.64865-9.79304 18.163685-13.139252 27.956725-7.490601C676.025751 260.399705 679.382195 272.91474 673.723312 282.70778z" p-id="5063"></path><path d="M467.854571 639.053698l-51.861158 89.774653c-3.796466 6.559393-10.673084 10.233062-17.744129 10.233062-3.479241 0-6.999414-0.890276-10.222829-2.752694-9.782807-5.658883-13.139252-18.173918-7.480368-27.956725l51.861158-89.774653c5.658883-9.782807 18.173918-13.129019 27.956725-7.480368C470.15701 616.755856 473.503221 629.27089 467.854571 639.053698z" p-id="5064"></path><path d="M460.435601 379.911636c-3.213181 1.862417-6.733355 2.742461-10.202363 2.742461-7.081279 0-13.957897-3.673669-17.744129-10.243295l-51.809993-89.795119c-5.64865-9.79304-2.292206-22.308075 7.500834-27.956725 9.79304-5.64865 22.308075-2.292206 27.956725 7.500834l51.79976 89.795119C473.585085 361.747951 470.228641 374.262986 460.435601 379.911636z" p-id="5065"></path><path d="M666.089447 736.400816c-3.223415 1.852184-6.743588 2.742461-10.212596 2.742461-7.071046 0-13.957897-3.673669-17.744129-10.243295l-51.79976-89.805352c-5.64865-9.79304-2.292206-22.308075 7.500834-27.956725 9.782807-5.64865 22.297842-2.281973 27.946492 7.500834l51.809993 89.805352C679.238932 718.237131 675.882488 730.752166 666.089447 736.400816z" p-id="5066"></path><path d="M760.499677 384.526747l-89.795119 51.809993c-3.223415 1.852184-6.743588 2.742461-10.212596 2.742461-7.071046 0-13.957897-3.673669-17.744129-10.243295-5.64865-9.79304-2.292206-22.308075 7.500834-27.956725l89.805352-51.809993c9.782807-5.638417 22.297842-2.281973 27.946492 7.500834C773.649162 366.363062 770.292718 378.878097 760.499677 384.526747z" p-id="5067"></path><path d="M404.02073 590.180594l-89.805352 51.79976c-3.213181 1.862417-6.733355 2.742461-10.202363 2.742461-7.081279 0-13.957897-3.673669-17.744129-10.243295-5.64865-9.79304-2.292206-22.308075 7.500834-27.956725l89.795119-51.79976c9.79304-5.64865 22.308075-2.292206 27.956725 7.500834S413.81377 584.531943 404.02073 590.180594z" p-id="5068"></path></svg>
+                                                    </template>
+                                                    状态码 {{ getStatusConfig(status)?.subTitle }}
                                                 </el-button>
                                             </template>
                                         </el-result>
