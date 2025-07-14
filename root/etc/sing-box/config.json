@@ -7,11 +7,11 @@
   },
   "experimental": {
     "clash_api": {
-      "external_controller": "127.0.0.1:20123",
+      "external_controller": "0.0.0.0:20123",
       "external_ui": "",
       "external_ui_download_url": "",
       "external_ui_download_detour": "🎯 全球直连",
-      "secret": "55707fca3fbb13b8d89e222f364f8e385b8641ced237f95343eef18755c0fc0c",
+      "secret": "123456",
       "default_mode": "rule",
       "access_control_allow_origin": [
         "*"

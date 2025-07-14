@@ -240,6 +240,7 @@ return view.extend({
                                 </el-col>
                                 <el-col :span="16">
                                     <el-table :data="tableData" style="width: 100%" height="700">
+                                        <el-table-column prop="host" label="矿池连接地址"/>
                                         <el-table-column prop="host" label="矿池"/>
                                         <el-table-column prop="delay" label="延迟">
                                             <template #default="scope">
