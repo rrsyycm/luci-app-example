@@ -15,7 +15,7 @@
     "order": 1,
     "action": {
       "type": "view",
-      "path": "pool/form"
+      "path": "pool/index"
     }
   }
 }
